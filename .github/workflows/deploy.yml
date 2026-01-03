@@ -27,7 +27,7 @@ jobs:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_KEY }}
-        connect_timeout: 30
+        timeout: 30
         port: 22
         # The script to run on your server
         script: |
