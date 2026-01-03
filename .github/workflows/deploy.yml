@@ -21,22 +21,31 @@ jobs:
         args: --accept-routes
 
     - name: Deploy via SSH
-      # We use a popular pre-made action 'appleboy/ssh-action' to simplify the SSH connection
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.SSH_KEY }}
-        timeout: 30s
-        port: 22
-        # The script to run on your server
-        script: |
-          sudo chown -R kali:kali /var/www/trial-cicd
-          git config --global --add safe.directory /var/www/trial-cicd
-          cd /var/www/trial-cicd
-          git pull origin main
-          source venv/bin/activate
-          pip install -r requirements.txt
-          python manage.py migrate
-          sudo systemctl restart mywebsite
-          sudo systemctl reload nginx
+      run: |
+        # 1. Setup the SSH Key
+        mkdir -p ~/.ssh/
+        echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+
+        # 2. Add server to known_hosts (to avoid interactive prompt)
+        # We disable strict checking here for simplicity in automation
+        echo "StrictHostKeyChecking no" >> ~/.ssh/config
+
+        # 3. Run the commands directly
+        ssh -i ~/.ssh/id_ed25519 -o ConnectTimeout=30 ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
+            # Stop on first error
+            set -e
+
+            # Commands to run on Kali
+            sudo chown -R kali:kali /var/www/trial-cicd
+            git config --global --add safe.directory /var/www/trial-cicd
+            cd /var/www/trial-cicd
+            git pull origin main
+            
+            source venv/bin/activate
+            pip install -r requirements.txt
+            python manage.py migrate
+            
+            # Restart the service
+            sudo systemctl restart mywebsite
+        "
