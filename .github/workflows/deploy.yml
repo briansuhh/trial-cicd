@@ -1,6 +1,5 @@
 name: Deploy to Production
 
-# Trigger the workflow on push to the main branch
 on:
   push:
     branches:
@@ -20,12 +19,22 @@ jobs:
         authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
         args: --accept-routes
 
-    - name: Deploy via SSH
+    - name: Test Network Connection
+      run: |
+        echo "My Tailscale IP is:"
+        tailscale ip -4
+        
+        echo "--------------------------------------"
+        echo "Pinging your Kali Server at ${{ secrets.HOST }}..."
+        tailscale ping -c 5 ${{ secrets.HOST }}
+
+    - name: Deploy via Native SSH
       run: |
         mkdir -p ~/.ssh/
         echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_ed25519
-        chmod 600 ~/.ssh/id_ed25519
-        echo "StrictHostKeyChecking no" >> ~/.ssh/config
+        chmod 600 ~/.ssh/id_ed25519        
+        ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+        echo "Starting SSH connection..."
         ssh -i ~/.ssh/id_ed25519 -o ConnectTimeout=30 ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
             set -e
             sudo chown -R kali:kali /var/www/trial-cicd
