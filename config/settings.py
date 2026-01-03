@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-1b0#y-=v_w7b)7j)c^o6pj52=oh$(iu8h_5_qq&!s!9fwe-4u%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -37,6 +37,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "notes",
+    # Dev tools
+    "drf_spectacular",
 ]
 
 MIDDLEWARE = [
@@ -121,3 +126,15 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# REST Framework settings
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# drf-spectacular settings
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Notes API',
+    'DESCRIPTION': 'API for managing notes',
+    'VERSION': '1.0.0',
+}

@@ -1,0 +1,33 @@
+name: Deploy to Production
+
+# Trigger the workflow on push to the main branch
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Deploy via SSH
+      # We use a popular pre-made action 'appleboy/ssh-action' to simplify the SSH connection
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: 22
+        # The script to run on your server
+        script: |
+          cd /var/www/trial-cicd
+          git pull origin main
+          source venv/bin/activate
+          pip install -r requirements.txt
+          python manage.py migrate
+          sudo systemctl restart mywebsite
+          sudo systemctl reload nginx
