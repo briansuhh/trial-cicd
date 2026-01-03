@@ -35,14 +35,14 @@ jobs:
         chmod 600 ~/.ssh/id_ed25519        
         ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
         echo "Starting SSH connection..."
-        ssh -tt -i ~/.ssh/id_ed25519 -o ConnectTimeout=30 ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
+        ssh -i ~/.ssh/id_ed25519 -o ConnectTimeout=30 -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} << 'EOF'
             set -e
-            sudo chown -R kali:kali /var/www/trial-cicd
+            sudo -n chown -R kali:kali /var/www/trial-cicd
             git config --global --add safe.directory /var/www/trial-cicd
             cd /var/www/trial-cicd
             git pull origin main
             source venv/bin/activate
             pip install -r requirements.txt
             python manage.py migrate
-            sudo systemctl restart mywebsite
-        "
+            sudo -n systemctl restart mywebsite
+        EOF
