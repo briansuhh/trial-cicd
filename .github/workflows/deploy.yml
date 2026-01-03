@@ -18,6 +18,7 @@ jobs:
       uses: tailscale/github-action@v2
       with:
         authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+        args: --accept-routes
 
     - name: Deploy via SSH
       # We use a popular pre-made action 'appleboy/ssh-action' to simplify the SSH connection
@@ -26,9 +27,12 @@ jobs:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_KEY }}
+        connect_timeout: 30
         port: 22
         # The script to run on your server
         script: |
+          sudo chown -R kali:kali /var/www/trial-cicd
+          git config --global --add safe.directory /var/www/trial-cicd
           cd /var/www/trial-cicd
           git pull origin main
           source venv/bin/activate
